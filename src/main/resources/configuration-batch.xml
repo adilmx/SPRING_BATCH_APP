@@ -1,12 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:batch="http://www.springframework.org/schema/batch"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/batch
-       http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
-       http://www.springframework.org/schema/bean
-       http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+       xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/batch
+    http://www.springframework.org/schema/batch/spring-batch.xsd">
 
+    <!-- READER -->
+    <bean id="bankTransactionItemReaderCustom" class="org.springframework.batch.item.file.FlatFileItemReader"
+          scope="step">
+        <property name="resource" value="classpath:data.csv"/>
+        <property name="name" value="CSV-READER"/>
+        <property name="lineMapper" ref="lineMapper"/>
+        <property name="linesToSkip" value="1"/>
+    </bean>
+    <bean id="lineMapper" class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+        <property name="lineTokenizer" ref="lineTokenizer"/>
+        <property name="fieldSetMapper" ref="fieldMapper"/>
+    </bean>
+    <bean id="lineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+        <property name="names" value="id,accountId,strTransactionDate,transactionType,amount"/>
+        <property name="delimiter" value=","/>
+        <property name="strict" value="false"/>
+    </bean>
+    <bean id="stepScope" class="org.springframework.batch.core.scope.StepScope">
+        <property name="autoProxy" value="true"/>
+    </bean>
+    <!--<bean id="fieldMapper" class="com.adilmx.spring_batch_app.batch.mapper.FieldMapper">
+        <property name="targetType" ref="">
+    </bean>-->
+    <!-- PROCESSOR -->
+    <bean id="bankTransactionCompositeItemProcessorCustom"
+          class="org.springframework.batch.item.support.CompositeItemProcessor">
+        <property name="delegates">
+            <list>
+                <!-- processors used in runtime of batch -->
+                <ref bean="bankTransactionItemAnalyticsProcessor"/>
+                <ref bean="bankTransactionItemProcessor"/>
+            </list>
+        </property>
+    </bean>
+    <!-- WRITER -->
+    <bean id="compositeWriter" class="com.adilmx.spring_batch_app.batch.BankTransactionItemWriter"/>
+    <!-- GENERATE STEP 1-->
+    <batch:step id="step-load-data">
+        <batch:tasklet
+                transaction-manager="transactionManager">
+            <batch:chunk
+                    reader="bankTransactionItemReaderCustom"
+                    writer="compositeWriter"
+                    processor="bankTransactionCompositeItemProcessorCustom"
+                    commit-interval="100">
+            </batch:chunk>
+        </batch:tasklet>
+    </batch:step>
 
-
+    <!-- JOB DECLARATION-->
+    <batch:job id="ETL-load" job-repository="jobRepository">
+        <batch:step id="stepInit" parent="step-load-data"/>
+    </batch:job>
+    <!--<batch:job-repository id="jobRepository"
+                          isolation-level-for-create="REPEATABLE_READ"
+                          data-source="dataSource"
+                          transaction-manager="transactionManager"/>-->
 </beans>

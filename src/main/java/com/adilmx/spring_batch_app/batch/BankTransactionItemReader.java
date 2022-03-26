@@ -15,7 +15,7 @@ import com.adilmx.spring_batch_app.entity.BankTransaction;
 @Configuration
 public class BankTransactionItemReader {
 	    //define our reader
-		@Bean
+		//@Bean
 		public FlatFileItemReader<BankTransaction> flatFileItemReader(@Value("${inputFile}") Resource inputFile){
 			FlatFileItemReader<BankTransaction> flatFileItemReader = new FlatFileItemReader<>();
 			
@@ -31,7 +31,7 @@ public class BankTransactionItemReader {
 			return flatFileItemReader;
 		}
 
-		@Bean
+		//@Bean
 		public LineMapper<BankTransaction> lineMapper() {
 			
 			DefaultLineMapper<BankTransaction> lineMapper = new DefaultLineMapper<>();
