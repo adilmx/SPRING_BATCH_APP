@@ -1,5 +1,6 @@
 package com.adilmx.spring_batch_app.config;
 
+import com.adilmx.spring_batch_app.batch.mapper.FieldMapper;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -36,7 +37,7 @@ public class SpringBatchConfig {
 	//@Autowired private ItemProcessor<BankTransaction, BankTransaction> bankTransactionitemProcessor;
 	@Autowired private CompositeItemProcessor<BankTransaction, BankTransaction> compositeItemProcessor;
 
-	@Bean
+	//@Bean
 	public Job bankJob() {
 		Step step = stepBuilderFactory.get("step-load-data")
 				.<BankTransaction, BankTransaction>chunk(100)
@@ -52,5 +53,10 @@ public class SpringBatchConfig {
 	}
 
 	
-	
+	@Bean(name = "fieldMapper")
+    public FieldMapper fieldSetMapper(){
+        FieldMapper mapper = new FieldMapper();
+        mapper.setTargetType(BankTransaction.class);
+        return mapper;
+    }
 }
