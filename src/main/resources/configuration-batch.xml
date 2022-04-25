@@ -24,6 +24,8 @@
         <property name="delimiter" value=","/>
         <property name="strict" value="false"/>
     </bean>
+    <!-- to prevent eror of creating the instance of stepScope
+     too soon by @EnableBatchProcessing and wait until all configs are done -->
     <bean id="stepScope" class="org.springframework.batch.core.scope.StepScope">
         <property name="autoProxy" value="true"/>
     </bean>
